@@ -1,5 +1,4 @@
 import React from "react";
-import { Ionicons } from "@expo/vector-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -105,7 +104,7 @@ function MainApp() {
           component={DashBoardStackScreen} 
           options={{
             tabBarLabel: () => null, 
-            tabBarIcon: ({ focused, color }) => (
+            tabBarIcon: ({ focused }) => (
               focused ? <DashboardActive width={45} height={45} /> : <DashboardInactive width={45} height={45} />
             ),
           }}
@@ -124,7 +123,7 @@ function MainApp() {
           component={FriendCircleScreen} 
           options={{
             tabBarLabel: () => null, 
-            tabBarIcon: ({ focused, color }) => (
+            tabBarIcon: ({ focused }) => (
               focused ? <FrienCircleActive width={45} height={45} /> : <FrienCircleInactive width={45} height={45} />
             ),
           }}
@@ -134,7 +133,7 @@ function MainApp() {
           component={MapScreen} 
           options={{
             tabBarLabel: () => null, 
-            tabBarIcon: ({ focused, color }) => (
+            tabBarIcon: ({ focused }) => (
               focused ? <MapActive width={45} height={45} /> : <MapInactive width={45} height={45} />
             ),
           }}
@@ -144,7 +143,7 @@ function MainApp() {
           component={MessageScreen} 
           options={{
             tabBarLabel: () => null, 
-            tabBarIcon: ({ focused, color }) => (
+            tabBarIcon: ({ focused }) => (
               focused ? <MessageActive width={45} height={45} /> : <MessageInactive width={45} height={45} />
             ),
           }}
@@ -154,7 +153,7 @@ function MainApp() {
           component={UserStackScreen} 
           options={{
             tabBarLabel: () => null, 
-            tabBarIcon: ({ focused, color }) => (
+            tabBarIcon: ({ focused }) => (
               focused ? <UserActive width={45} height={45} /> : <UserInactive width={45} height={45} />
             ),
           }}
