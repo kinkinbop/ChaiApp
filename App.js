@@ -153,16 +153,12 @@ function MainApp() {
           component={UserStackScreen} 
           options={{
             tabBarLabel: () => null, 
-            tabBarIcon: ({ focused }) => (
-              focused ? <UserActive width={45} height={45} /> : <UserInactive width={45} height={45} />
-            ),
+            
           }}
           listeners={({ navigation }) => ({
             tabPress: event => {
               
               event.preventDefault();
-        
-              
               navigation.navigate('User', { screen: 'UserMain' });
             },
           })}

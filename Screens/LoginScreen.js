@@ -1,11 +1,9 @@
     import React, { useState, useEffect } from 'react';
     import {Modal, View, TextInput, Button, StyleSheet, Alert, ImageBackground, TouchableOpacity, Text, Image } from 'react-native';
-    import { KeyboardAvoidingView, Platform } from 'react-native';
+    import { KeyboardAvoidingView, Platform} from 'react-native';
     import { TouchableWithoutFeedback, Keyboard } from 'react-native';
-
-
-
-
+    import{AsyncStorage } from '@react-native-async-storage/async-storage'
+    import {MyRequest,setItem,getItem} from '../util/request';
     export default function LoginScreen({ navigation }) {
         const [username, setUsername] = useState('');
         const [password, setPassword] = useState('');
@@ -14,7 +12,7 @@
         const [showImage, setShowImage] = useState(true);
         const [fieldError, setFieldError] = useState(''); 
         const [showModal, setShowModal] = useState(false);
-
+        const phoneCheck = /^1\d{10}$/;
         useEffect(() => {
             if (verificationTime > 0) {
                 const timer = setTimeout(() => {
@@ -26,23 +24,37 @@
             }
         }, [verificationTime]);
 
-        const handleLogin = () => {
+        const handleLogin = async() => {
             setFieldError('');
-            if (!username || username.length < 11) {
+            if (!phoneCheck.test(username)) {
                 setFieldError('请输入正确的手机号');
                 return;
             }
-        
             if (!password) {
                 setFieldError('请获取验证码');
                 return;
             }
-        
             if (isChecked) {
-                navigation.replace('MainApp');
+                var clientDetail="phone="+username+"&smsCode="+password+"&grant_type=password&client_id=mydog&scope=all&client_secret=myDog";
+                const response=await MyRequest({
+                    url: '/oauth/token?'+clientDetail,
+					method: 'POST',
+                });
+                if (response.access_token!==undefined){
+                    await setItem('access_token', response.access_token);
+					await setItem('refresh_token', response.refresh_token);
+					await setItem('userDetails', response.userDetails);
+                    const refresh_token=await getItem('refresh_token');
+                    console.log(refresh_token);
+                    navigation.replace('MainApp');
+                }
+                else{
+                    setFieldError('登陆失败，请重新登录');
+                    return;
+                }
             } else {
                 setShowModal(true);
-            }
+            } 
         };
         const handleAgree = () => {
             setIsChecked(true);
@@ -54,11 +66,19 @@
             // You can navigate or do something else when the user disagrees
         };
 
-        const requestVerificationCode = () => {
-            if (verificationTime === 0) {
-                setShowImage(false);  
-                setVerificationTime(60);
-                
+        const requestVerificationCode = async() => {
+            if (phoneCheck.test(username)){
+                if (verificationTime === 0) {
+                    setShowImage(false);  
+                    setVerificationTime(60);
+                    const response = await MyRequest({
+                        url:'/msm/send/'+username,
+                    })
+                    console.log(response);
+                }
+            }
+            else{
+                setFieldError('请输入正确的手机号');
             }
         };
 
