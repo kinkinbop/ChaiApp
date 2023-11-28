@@ -1,63 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
 const MessageScreen = () => {
   const [messages, setMessages] = useState([]);
-  const [ws, setWs] = useState(null);
+  let ws;
+  let heartbeatInterval;
 
   useEffect(() => {
-    const websocket = new WebSocket('ws://139.186.13.82:3003');
-    setWs(websocket);
+    // Establish WebSocket connection
+    ws = new WebSocket('ws://139.186.13.82:3003/terminal/realtime');
 
-    websocket.onopen = () => {
-      console.log('WebSocket connection opened.');
+    ws.onopen = () => {
+      console.log('WebSocket Connected');
+      // Send initial subscription messages
+      const subscriptionMessages = [
+        {
+          "RequestType":1,
+          "Data":{
+            "TerminalID": "10069095980", // 终端ID
+            "Subscribe": true, // 是否订阅: false-取消订阅, true-订阅
+            "WidthCurLocation": true
+          }
+        }
+      ];
+      ws.send(JSON.stringify(subscriptionMessages));
 
-      // Send a subscription message for the terminal ID
-      const subscriptionMessage = {
-        type: 'subscribe',
-        terminalId: '10069096012', // Your terminal ID
-      };
-      websocket.send(JSON.stringify(subscriptionMessage));
-
-      // Send a heartbeat every 20 seconds
-      const heartbeatInterval = setInterval(() => {
-        websocket.send(JSON.stringify({ type: 'heartbeat' }));
+      // Send heartbeat every 20 seconds
+      heartbeatInterval = setInterval(() => {
+        ws.send(JSON.stringify([{ RequestType: 0, Data: true }]));
       }, 20000);
-
-      return () => clearInterval(heartbeatInterval);
     };
 
-    websocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // Assuming the server sends back messages that include the terminal ID
-      // Filter messages for the specific terminal ID
-      if (data.terminalId === '10069096012') {
-        setMessages((prevMessages) => [...prevMessages, data]);
+    ws.onmessage = (e) => {
+      console.log('Message from server:', e.data);
+      try {
+        const receivedData = JSON.parse(e.data);
+        setMessages(prevMessages => [...prevMessages, ...receivedData]);
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
       }
     };
 
-    websocket.onerror = (event) => {
-      console.error('WebSocket error:', event.message);
+    ws.onerror = (e) => {
+      console.error('WebSocket Error:', e.message);
     };
 
-    websocket.onclose = (event) => {
-      console.log('WebSocket connection closed:', event.reason);
+    ws.onclose = () => {
+      console.log('WebSocket Disconnected');
     };
 
     return () => {
-      websocket.close();
+      if (ws) {
+        ws.close();
+      }
+      clearInterval(heartbeatInterval);
     };
   }, []);
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {messages.map((message, index) => (
-          <Text key={index} style={styles.message}>
-            {JSON.stringify(message)}
-          </Text>
-        ))}
-      </ScrollView>
+      {messages.map((message, index) => (
+        <Text key={index} style={styles.text}>
+           {`Terminal ID: ${message.Data.TerminalID}, Location: ${message.Data.Latitude}, ${message.Data.Longitude}`}
+        </Text>
+      ))}
     </View>
   );
 };
@@ -65,18 +71,15 @@ const MessageScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollView: {
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 10,
   },
-  message: {
+  text: {
     fontSize: 16,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    textAlign: 'center',
     marginBottom: 10,
-  },
+  }
 });
 
 export default MessageScreen;
