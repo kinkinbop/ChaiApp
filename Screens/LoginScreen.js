@@ -41,10 +41,10 @@
 					method: 'POST',
                 });
                 if (response.access_token!==undefined){
-                    await setItem('access_token', response.access_token);
-					await setItem('refresh_token', response.refresh_token);
-					await setItem('userDetails', response.userDetails);
-                    const refresh_token=await getItem('refresh_token');
+                    setItem('access_token', response.access_token);
+					setItem('refresh_token', response.refresh_token);
+					setItem('userDetails', response.userDetails);
+                    const refresh_token= getItem('refresh_token');
                     console.log(refresh_token);
                     navigation.replace('MainApp');
                 }
@@ -83,7 +83,7 @@
         };
 
         return (
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback onPress = {Keyboard.dismiss}>
                 <ImageBackground source={require('../assets/登录页.png')} style={styles.container}>
                     <KeyboardAvoidingView
                         style={styles.inputContainer}
@@ -305,7 +305,7 @@
         },
         hyperlink: {
         color: 'blue',
-        textDecorationLine: 'underline',
+        textDecorationLine: 'none',
         },
         statementContainer: {
             flexDirection: 'row',
